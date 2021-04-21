@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日语假名训练</title>
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/japanese.css">
+
+</head>
+<body>
+    <center>
+    <div class="container">
+        <button class="item btn btn-outline-secondary active" id="平仮名" onclick="selectHira()">平仮名</button>
+        <button class="item btn btn-outline-secondary" id="カタカナ" onclick="selectKata()">カタカナ</button>
+    </div>
+    <form>
+        <div class="text-container" id="testarea">
+        </div>
+    </form>
+    <div id="alertbox">
+        <button class="item btn btn-outline-secondary" onclick="showAnswer()">Show Answer</button>
+    </div>
+    </center>
+</body>
+<script src="vendor/jquery/jquery.min.js"></script>
+<script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script>
+wordbank = [
+    [['a'], 'あア'],
+    [['i'], 'いイ'],
+    [['u'], 'うウ'],
+    [['e'], 'えエ'],
+    [['o'], 'おオ'],
+    [['ka'], 'かカ'],
+    [['ki'], 'きキ'],
+    [['ku'], 'くク'],
+    [['ke'], 'けケ'],
+    [['ko'], 'こコ'],
+    [['sa'], 'さサ'],
+    [['shi', 'si'], 'しシ'],
+    [['su'], 'すス'],
+    [['se'], 'せセ'],
+    [['so'], 'そソ'],
+    [['ta'], 'たタ'],
+    [['chi'], 'ちチ'],
+    [['tsu'], 'つツ'],
+    [['te'], 'てテ'],
+    [['to'], 'とト'],
+    [['na'], 'なナ'],
+    [['ni'], 'にニ'],
+    [['nu'], 'ぬヌ'],
+    [['ne'], 'ねネ'],
+    [['no'], 'のノ'],
+    [['ha'], 'はハ'],
+    [['hi'], 'ひヒ'],
+    [['fu', 'hu'], 'ふフ'],
+    [['he'], 'へヘ'],
+    [['ho'], 'ほホ'],
+    [['ma'], 'まマ'],
+    [['mi'], 'みミ'],
+    [['mu'], 'むム'],
+    [['me'], 'めメ'],
+    [['mo'], 'もモ'],
+    [['ya'], 'やヤ'],
+    [['yu'], 'ゆユ'],
+    [['yo'], 'よヨ'],
+    [['ra'], 'らラ'],
+    [['ri'], 'りリ'],
+    [['ru'], 'るル'],
+    [['re'], 'れレ'],
+    [['ro'], 'ろロ'],
+    [['wa'], 'わワ'],
+    [['wo'], 'をヲ'],
+    [['n', 'nn'], 'んン'],
+];
+
+const hira = 0;
+const kata = 1;
+const hiraAndKata = 2;
+const separator = '-';
+var currentSelection = 0;
+var currentArray = [];
+
+function selectHira(){
+    currentSelection = hira;
+    $("#平仮名").addClass('active');
+    $("#カタカナ").removeClass('active');
+    load_test();
+}
+
+function selectKata(){
+    currentSelection = kata;
+    $("#カタカナ").addClass('active');
+    $("#平仮名").removeClass('active');
+    load_test();
+}
+
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+function randomized(hiraOrKata){
+    if (hiraOrKata != hira && hiraOrKata != kata){
+        alert("Chosen method has to be hira or kata or hiraAndKata");
+        return;
+    }
+    
+    result = [];
+    if (hiraOrKata == hira || hiraOrKata == kata){
+        array = shuffle(wordbank);
+        for (let index = 0; index < array.length; index++) {
+            const element = array[index];
+            result.push([element[0], element[1][hiraOrKata]]);
+        }
+    }
+    if (hiraOrKata == hiraAndKata){
+        array1 = shuffle(wordbank);
+        array2 = shuffle(wordbank);
+        for (let index = 0; index < array.length; index++) {
+            const element1 = array1[index];
+            const element2 = array2[index];
+            result.push([element1[0], element1[1][hira]]);
+            result.push([element2[0], element2[1][kata]]);
+        }
+    }
+    
+    return result
+}
+
+var letter_template = function (character, pronounce, i) {
+    return "<div class=\"letter-container\">\n" +
+        "<div class=\"letter\">\n" +
+        "<span>" + character + "</span>" +
+        '<span class="answer" style="visible:none" data-answer="' + pronounce + '"></span>' + 
+        "</div>\n" +
+        "<div class=\"plain-letter\">\n" +
+        "<input type=\"text\" class=\"form-control input-sm\" tabindex=\"" + (i+1) + "\">\n" +
+        "</div>\n" +
+        "</div>";
+};
+
+var load_test = function () {
+    var i;
+    $('#testarea').empty();
+    shuffledVocab = randomized(currentSelection);
+    currentArray = shuffledVocab;
+    for (i = 0; i < shuffledVocab.length; i++) {
+        character = shuffledVocab[i][1];
+        pronounce = shuffledVocab[i][0].join(separator);
+        $('#testarea').append(letter_template(character, pronounce, i));
+    }
+};
+
+
+function showAnswer(){
+    form = $('form:eq(0)')
+    var inputAnswers = form.find("input");
+    var actualAnswers = form.find(".answer");
+    for (let i = 0; i < inputAnswers.length; i++) {
+        var inputAnswer = inputAnswers.eq(i).val();
+        var actualAnswer = actualAnswers.eq(i).data('answer').split(separator);
+        console.log(actualAnswer);
+        if (actualAnswer.indexOf(inputAnswer) == -1 && !inputAnswer.includes('-')){
+            inputAnswers.eq(i).val(inputAnswer + " - " + actualAnswer[0]);
+            form.find("input").eq(i).css('border', '2px solid red');
+        } else if (actualAnswer.indexOf(inputAnswer) != -1) {
+            form.find("input").eq(i).css('border', '2px solid green');
+        }
+    }
+}
+
+$('body').on('keydown', 'input, select', function(e) {
+    if (e.key === "Enter") {
+        var self = $(this), form = self.parents('form:eq(0)'), focusable, next, index;
+        focusable = form.find('input').filter(':visible');
+        index = focusable.index(this);
+        next = focusable.eq(index+1);
+
+        var inputAnswer = form.find("input").eq(index).val();
+        var actualAnswer = form.find(".answer").eq(index).data('answer').split(separator);
+        if (actualAnswer.indexOf(inputAnswer) != -1){
+            form.find("input").eq(index).css('border', '2px solid green');
+        }else {
+            form.find("input").eq(index).css('border', '2px solid red');
+        }
+        if (next.length) {
+            next.focus();
+        } else {
+            form.find("input").eq(0).focus();
+        }
+        return false;
+    }
+    // left
+    if (e.keyCode === 37){
+        var self = $(this), form = self.parents('form:eq(0)'), focusable, previous, index;
+        focusable = form.find('input').filter(':visible');
+        index = focusable.index(this);
+        previous = focusable.eq(index-1);
+        if (previous.length) {
+            previous.focus();
+        } 
+        return false;
+    }
+    // right
+    if (e.keyCode === 39){
+        var self = $(this), form = self.parents('form:eq(0)'), focusable, next, index;
+        focusable = form.find('input').filter(':visible');
+        index = focusable.index(this);
+        next = focusable.eq(index+1);
+        if (next.length) {
+            next.focus();
+        } 
+        return false;
+    }
+});
+
+
+
+$(document).ready(function () {
+    load_test();
+});
+
+
+</script>
+</html>
